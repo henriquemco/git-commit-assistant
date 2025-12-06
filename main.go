@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	git_repository "git_commit_assistant/internal/git"
+)
 
 func main() {
-	fmt.Printf("Hello World")
+	data, err := git_repository.Verify()
+	if err != nil {
+		fmt.Printf("%s", err.Error())
+	}
+	fmt.Println(data)
 }
