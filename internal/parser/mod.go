@@ -12,9 +12,6 @@ func Message(data model.Application) string {
 		"Generate a commit message using this data: description, diff, and diff --cached.",
 		"Your response should follow this structure:",
 		"Commit message: ...",
-		"Summary...",
-		"Changes...",
-		"Implementation Details...",
 		"",
 		"Be direct and assertive.",
 		"------------------------------------",
@@ -37,6 +34,6 @@ func Message(data model.Application) string {
 func Get_commit_message(data string) string {
 	list := strings.Split(data, "\n")
 
-	commit_message := list[0][19:]
+	commit_message := list[0]
 	return commit_message
 }

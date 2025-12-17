@@ -47,7 +47,7 @@ func Add_changes() error {
 	return nil
 }
 
-func Commit(message string) error {
+func Commit(message string, description []string) error {
 	cmd := exec.Command("git", "commit", "-m", message)
 
 	_, err := cmd.Output()
@@ -56,5 +56,3 @@ func Commit(message string) error {
 	}
 	return nil
 }
-
-func Add_commit_description(description string) {}

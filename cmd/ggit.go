@@ -3,15 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"strings"
-	"time"
 
 	git_repository "git_commit_assistant/internal/git"
 	"git_commit_assistant/internal/handler"
 	"git_commit_assistant/internal/model"
 	"git_commit_assistant/internal/parser"
+	"git_commit_assistant/internal/ui"
 
-	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
@@ -23,6 +21,7 @@ func main() {
 
 	newInstace := model.Application{}
 
+	fmt.Println("\nHi! I'm a git commit assistant\n")
 	if git_repository.Exist_repository() {
 
 		//------
@@ -35,19 +34,21 @@ func main() {
 		//------
 		if newInstace.UnAdded != "" {
 
-			res := ""
 			fmt.Println("I noticed there are changes outside the stage;")
-			fmt.Println("Would you like me to add them ? [Y/N]")
+			prompt := ui.Select("Would you like me to add them ? [Y/N]")
+			option := "y"
+			c := prompt[3]
+			for _, char := range c {
+				if char == 'x' {
+					option = "n"
+				}
+			}
 
-			fmt.Print(" > ")
-			fmt.Scan(&res)
-
-			if strings.ToLower(res) == "y" {
+			if option == "y" {
 				if err := git_repository.Add_changes(); err != nil {
 					fmt.Printf("\nERROR : %s", err.Error())
 				}
 			}
-
 		}
 		//------
 		uncommitted, err := git_repository.Get_uncommitted_changes()
@@ -68,31 +69,19 @@ func main() {
 		fmt.Print(" > ")
 		fmt.Scan(&newInstace.Description)
 
+		// --------
 		data := parser.Message(newInstace)
 
 		stop := make(chan bool)
 
-		go func(stopchan chan bool) {
-			frames := []string{"|", "/", "-", "\\"}
-			i := 0
-			for {
-				select {
-				case <-stopchan:
-					fmt.Print("\r                          \r")
-					return
-				default:
-					color.RGB(192, 202, 245).Printf("\r%s", frames[i%len(frames)])
-					time.Sleep(200 * time.Millisecond)
-					i++
-				}
-			}
-		}(stop)
+		go ui.Loading(stop)
 
 		resp, _ := handler.Get_commit_message(data)
 
 		stop <- true
 
-		fmt.Println(resp.Text)
+		//---------
+
 		fmt.Println(parser.Get_commit_message(resp.Text))
 	}
 }
