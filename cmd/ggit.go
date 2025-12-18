@@ -75,18 +75,18 @@ func main() {
 		// --------
 		data := parser.Message(newInstace)
 
-		// stop := make(chan bool)
+		stop := make(chan bool)
 
-		// go ui.Loading(stop)
+		go ui.Loading(stop)
 
 		resp, err := handler.Get_commit_message(data)
 		if err != nil {
-			// stop <- true
+			stop <- true
 			log.Printf("ERROR : %s", err.Error())
 		}
-		// stop <- true
 
-		fmt.Println("ddd")
+		stop <- true
+
 		//---------
 
 		confirm_commit_message(parser.Get_commit_message(resp.Text))

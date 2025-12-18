@@ -2,12 +2,13 @@ package ui
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
+
+type stopMsg struct{}
 
 type modelLoading struct {
 	spinner  spinner.Model
@@ -55,16 +56,8 @@ func (m modelLoading) View() string {
 
 func Loading(stopchan chan bool) {
 	p := tea.NewProgram(initialModel())
-	for {
-		select {
-		case <-stopchan:
-			p.Kill()
-			return
-		default:
-			if _, err := p.Run(); err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
-		}
-	}
+
+	go p.Run()
+	<-stopchan
+	p.Kill()
 }
