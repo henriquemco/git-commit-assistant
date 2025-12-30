@@ -123,10 +123,10 @@ func confirm_commit_message(commit_message string) error {
 
 		last_commit, _ := git_repository.Get_last_commit()
 
-		fmt.Println(ui.StyleCommit("Committed."))
-		fmt.Printf("\n %s", last_commit)
+		fmt.Println(ui.StyleCommit("\nCommitted."))
+		fmt.Println(ui.StyleHashCommit(last_commit))
 	} else {
-		fmt.Println("\n    OK, bye.")
+		fmt.Println("\n OK, bye.")
 	}
 	return nil
 }

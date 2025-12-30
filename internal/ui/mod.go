@@ -15,6 +15,10 @@ var StyleError = lg.NewStyle().Foreground(lg.Color("#D8647E")).Bold(true).Render
 
 var Bold = lg.NewStyle().Bold(true).Render
 
+var StyleHashCommit = lg.NewStyle().
+	Bold(true).
+	Foreground(lg.Color("#BE9E73")).Render
+
 var StyleCommit = lg.NewStyle().
 	Bold(true).
 	Foreground(lg.Color("#8AA46E")).Render
@@ -45,7 +49,7 @@ func Loading(stopchan chan struct{}) {
 			fmt.Print("\n")
 			return
 		default:
-			fmt.Println(Bold(fmt.Sprintf("\r    %s Generating... \r ", frames[i%len(frames)])))
+			fmt.Println("\r" + Bold(fmt.Sprintf(" %s Generating...", frames[i%len(frames)])) + "\r")
 			time.Sleep(200 * time.Millisecond)
 			i++
 		}

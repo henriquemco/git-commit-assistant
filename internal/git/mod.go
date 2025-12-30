@@ -29,7 +29,7 @@ func Get_unadded_changes() (string, error) {
 }
 
 func Get_last_commit() (string, error) {
-	cmd := exec.Command("git", "diff", "--cached")
+	cmd := exec.Command("git", "log", "--oneline", "--graph")
 
 	output, err := cmd.Output()
 	if err != nil {
