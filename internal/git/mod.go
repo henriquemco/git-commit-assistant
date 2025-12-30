@@ -3,6 +3,7 @@ package git_repository
 import (
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type Data struct {
@@ -25,6 +26,16 @@ func Get_unadded_changes() (string, error) {
 		return "", err
 	}
 	return string(output), nil
+}
+
+func Get_last_commit() (string, error) {
+	cmd := exec.Command("git", "diff", "--cached")
+
+	output, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.Split(string(output), "\n")[0], nil
 }
 
 func Get_uncommitted_changes() (string, error) {

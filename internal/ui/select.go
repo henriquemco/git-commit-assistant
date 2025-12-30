@@ -9,14 +9,13 @@ import (
 )
 
 type modelSelect struct {
-	label    string
 	cursor   int
 	choices  []string
 	selected map[int]struct{}
 }
 
-func Select(input string) []string {
-	p := tea.NewProgram(InitialModel(input))
+func Select() []string {
+	p := tea.NewProgram(InitialModel())
 	model, err := p.Run()
 	if err != nil {
 		log.Fatal(err)
@@ -26,9 +25,8 @@ func Select(input string) []string {
 	return prompt
 }
 
-func InitialModel(label string) modelSelect {
+func InitialModel() modelSelect {
 	return modelSelect{
-		label:   label,
 		choices: []string{"Yes", "No"},
 
 		selected: make(map[int]struct{}),
@@ -60,6 +58,7 @@ func (m modelSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if ok {
 				delete(m.selected, outher)
 			}
+
 			_, ok = m.selected[m.cursor]
 
 			if ok {
@@ -76,7 +75,7 @@ func (m modelSelect) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m modelSelect) View() string {
-	s := fmt.Sprintf("%s\n\n", m.label)
+	s := ""
 	for i, choice := range m.choices {
 		cursor := " "
 		if m.cursor == i {
@@ -88,7 +87,7 @@ func (m modelSelect) View() string {
 			checked = "x"
 		}
 
-		s += fmt.Sprintf("    %s [%s] %s\n", cursor, checked, choice)
+		s += fmt.Sprintf(" %s [%s] %s\n", cursor, checked, choice)
 	}
 
 	return s

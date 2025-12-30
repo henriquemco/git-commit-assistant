@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 
 	git_repository "git_commit_assistant/internal/git"
 	"git_commit_assistant/internal/handler"
@@ -22,27 +24,28 @@ func main() {
 	newInstace := model.Application{}
 
 	ui.Introduction()
+
 	if git_repository.Exist_repository() {
 
 		//------
 		unadded, err := git_repository.Get_unadded_changes()
 		if err != nil {
-			log.Println(ui.StyleError.Render(fmt.Sprintf("\nERROR : %s", err.Error())))
+			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
 		newInstace.UnAdded = unadded
 
 		//------
 		if err := check_unadded_changes(newInstace.UnAdded); err != nil {
-			log.Println(ui.StyleError.Render(fmt.Sprintf("\nERROR : %s", err.Error())))
+			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
 		//------
 		uncommitted, err := git_repository.Get_uncommitted_changes()
 		if err != nil {
-			log.Println(ui.StyleError.Render(fmt.Sprintf("\nERROR : %s", err.Error())))
+			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
 
 		if uncommitted == "" {
-			fmt.Println("There are no changes to be committed.")
+			fmt.Println(ui.Bold("\n :: There are no changes to be committed."))
 			return
 		}
 
@@ -50,7 +53,14 @@ func main() {
 
 		//------
 
-		prompt := ui.Input("What did you do?")
+		fmt.Println(ui.Bold("\n :: What did you do ? (Corrections, new features, improvements...)"))
+
+		fmt.Print("==> ")
+		prompt, err := bufio.NewReader(os.Stdout).ReadString('\n')
+		if err != nil {
+			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
+		}
+
 		newInstace.Description = prompt
 
 		// --------
@@ -63,7 +73,7 @@ func main() {
 		resp, err := handler.Get_commit_message(data)
 		if err != nil {
 			close(stop)
-			log.Println(ui.StyleError.Render(fmt.Sprintf("\nERROR : %s", err.Error())))
+			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
 
 		close(stop)
@@ -76,13 +86,16 @@ func main() {
 
 func check_unadded_changes(diff string) error {
 	if diff != "" {
-		prompt := ui.Select("    I noticed there are changes outside the stage;\n    Would you like me to add them ? [Y/N]")
+		fmt.Println(ui.Bold("\n :: I noticed there are changes outside the stage;"))
+		fmt.Println(ui.Bold(" :: Would you like me to add them ? [Y/N]"))
+
+		prompt := ui.Select()[2]
 		option := "y"
 
 		// Why do I only analyze the "no" field?
 		// The option is automatically set to "yes," so you just need to check if it wasn't selected.
 
-		for _, char := range prompt[3] {
+		for _, char := range prompt {
 			if char == 'x' {
 				option = "n"
 			}
@@ -99,10 +112,11 @@ func check_unadded_changes(diff string) error {
 }
 
 func confirm_commit_message(commit_message string) {
-	fmt.Println(ui.StyleCommit.Render("\n    Commit message : "))
+	fmt.Print(ui.StyleCommit("\n :: Commit message : "))
 	fmt.Print(commit_message + "\n")
 
-	prompt := ui.Select("    Did you like it ?")[3]
+	fmt.Println(ui.Bold(" :: Did you like it ?"))
+	prompt := ui.Select()[2]
 
 	option := true
 	for _, char := range prompt {
@@ -110,8 +124,14 @@ func confirm_commit_message(commit_message string) {
 			option = false
 		}
 	}
+
+	last_commit, _ := git_repository.Get_last_commit()
 	if option {
 		git_repository.Commit(commit_message)
+
+		fmt.Println(ui.StyleCommit("Committed."))
+		fmt.Printf("\n %s", last_commit)
+
 	} else {
 		fmt.Println("\n    OK, bye.")
 	}
