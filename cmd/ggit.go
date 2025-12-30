@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	git_repository "git_commit_assistant/internal/git"
 	"git_commit_assistant/internal/handler"
@@ -45,7 +46,7 @@ func main() {
 		}
 
 		if uncommitted == "" {
-			fmt.Println(ui.Bold("\n :: There are no changes to be committed."))
+			fmt.Println(ui.Bold("\n:: There are no changes to be committed."))
 			return
 		}
 
@@ -53,7 +54,7 @@ func main() {
 
 		//------
 
-		fmt.Println(ui.Bold("\n :: What did you do ? (Corrections, new features, improvements...)"))
+		fmt.Println(ui.Bold("\n:: What did you do ? (Corrections, new features, improvements...)"))
 
 		fmt.Print("==> ")
 		prompt, err := bufio.NewReader(os.Stdout).ReadString('\n')
@@ -86,53 +87,46 @@ func main() {
 
 func check_unadded_changes(diff string) error {
 	if diff != "" {
-		fmt.Println(ui.Bold("\n :: I noticed there are changes outside the stage;"))
-		fmt.Println(ui.Bold(" :: Would you like me to add them ? [Y/N]"))
+		fmt.Println(ui.Bold("\n:: I noticed there are changes outside the stage;"))
+		fmt.Println(ui.Bold(":: Would you like me to add them ? [Type y for yes/anything else for no]"))
 
-		prompt := ui.Select()[2]
-		option := "y"
-
-		// Why do I only analyze the "no" field?
-		// The option is automatically set to "yes," so you just need to check if it wasn't selected.
-
-		for _, char := range prompt {
-			if char == 'x' {
-				option = "n"
-			}
+		fmt.Print("==> ")
+		prompt, err := bufio.NewReader(os.Stdout).ReadString('\n')
+		if err != nil {
+			return err
 		}
 
-		if option == "y" {
+		prompt = strings.ToLower(strings.Trim(prompt, "\n"))
+		if prompt == "y" {
 			if err := git_repository.Add_changes(); err != nil {
 				return err
 			}
 		}
-		return nil
 	}
 	return nil
 }
 
-func confirm_commit_message(commit_message string) {
-	fmt.Print(ui.StyleCommit("\n :: Commit message : "))
+func confirm_commit_message(commit_message string) error {
+	fmt.Print(ui.StyleCommit("\n:: Commit message : "))
 	fmt.Print(commit_message + "\n")
 
-	fmt.Println(ui.Bold(" :: Did you like it ?"))
-	prompt := ui.Select()[2]
-
-	option := true
-	for _, char := range prompt {
-		if char == 'x' {
-			option = false
-		}
+	fmt.Println(ui.Bold(":: Did you like it ? [Type y for yes/anything else for no]"))
+	fmt.Print("==> ")
+	prompt, err := bufio.NewReader(os.Stdout).ReadString('\n')
+	if err != nil {
+		return err
 	}
 
-	last_commit, _ := git_repository.Get_last_commit()
-	if option {
+	prompt = strings.ToLower(strings.Trim(prompt, "\n"))
+	if prompt == "y" {
 		git_repository.Commit(commit_message)
+
+		last_commit, _ := git_repository.Get_last_commit()
 
 		fmt.Println(ui.StyleCommit("Committed."))
 		fmt.Printf("\n %s", last_commit)
-
 	} else {
 		fmt.Println("\n    OK, bye.")
 	}
+	return nil
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"time"
 
 	lg "github.com/charmbracelet/lipgloss"
 )
@@ -30,5 +31,23 @@ func Introduction() {
 
 	for _, line := range banner {
 		fmt.Println(line)
+	}
+}
+
+func Loading(stopchan chan struct{}) {
+	frames := []string{"⣾ ", "⣽ ", "⣻ ", "⢿ ", "⡿ ", "⣟ ", "⣯ ", "⣷ "}
+	i := 0
+	for {
+		select {
+		case <-stopchan:
+
+			fmt.Print("\r                          \r")
+			fmt.Print("\n")
+			return
+		default:
+			fmt.Println(Bold(fmt.Sprintf("\r    %s Generating... \r ", frames[i%len(frames)])))
+			time.Sleep(200 * time.Millisecond)
+			i++
+		}
 	}
 }
