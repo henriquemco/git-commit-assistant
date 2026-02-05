@@ -2,32 +2,37 @@ package handler
 
 import (
 	"context"
-	"os"
+	"fmt"
+
+	"git_commit_assistant/internal/model"
 
 	openrouter "github.com/revrost/go-openrouter"
 )
 
-func Get_commit_message(data string) (openrouter.Content, error) {
-	token := os.Getenv("OPENROUTER_TOKEN")
-	model := os.Getenv("OPENROUTER_MODEL")
+func LLM_message(data string, credentials model.CredentialsFile) (string, error) {
+	fmt.Println(credentials)
 
 	client := openrouter.NewClient(
-		token,
-		openrouter.WithXTitle("My App"),
-		openrouter.WithHTTPReferer("https://myapp.com"),
+		credentials.Key,
+		openrouter.WithXTitle("Git Commit Assistant"),
+		openrouter.WithHTTPReferer("https://gitcommitassistant.com"),
 	)
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openrouter.ChatCompletionRequest{
-			Model: model,
+			Model: credentials.Model,
 			Messages: []openrouter.ChatCompletionMessage{
 				openrouter.UserMessage(data),
 			},
 		},
 	)
 
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("Error : %s ", err.Error())
+	}
+
 	response := resp.Choices[0].Message.Content
 
-	return response, err
+	return response.Text, err
 }

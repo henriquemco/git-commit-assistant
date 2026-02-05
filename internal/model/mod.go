@@ -5,3 +5,8 @@ type Application struct {
 	UnCommitted string
 	Description string
 }
+
+type CredentialsFile struct {
+	Key   string
+	Model string
+}
