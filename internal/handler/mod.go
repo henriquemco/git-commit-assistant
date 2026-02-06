@@ -10,8 +10,6 @@ import (
 )
 
 func LLM_message(data string, credentials model.CredentialsFile) (string, error) {
-	fmt.Println(credentials)
-
 	client := openrouter.NewClient(
 		credentials.Key,
 		openrouter.WithXTitle("Git Commit Assistant"),
