@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"git_commit_assistant/internal/assistant"
+	"git_commit_assistant/internal/auth"
 	"git_commit_assistant/internal/git"
 	"git_commit_assistant/internal/handler"
 	"git_commit_assistant/internal/model"
@@ -28,43 +28,27 @@ func main() {
 
 	ui.Introduction()
 
-	exist, err := assistant.Check_credentials_files()
+	// ---
+	exist, err := auth.Check_credentials_files()
 	if err != nil {
 		log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 	}
 
 	if exist {
-		credentials, err = assistant.Get_credentials()
+		credentials, err = auth.Get_credentials()
 		if err != nil {
 			log.Println(ui.StyleError("\nERROR : We were unable to access the credentials for the LLM. "))
 			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
 	} else {
-		fmt.Println(ui.Bold("\n:: Is this your first time accessing the site, or did you delete your credentials file?"))
-		fmt.Println(ui.Bold("\n:: We'll create a new one for you!"))
-
-		fmt.Print("= Your api Key [Open Router] => ")
-		credentials.Key, err = bufio.NewReader(os.Stdout).ReadString('\n')
-		if err != nil {
+		if err := auth.Set_credentials(&credentials); err != nil {
 			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
-		}
-
-		fmt.Print("= The model you will use [Open Router] => ")
-		credentials.Model, err = bufio.NewReader(os.Stdout).ReadString('\n')
-		if err != nil {
-			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
-		}
-
-		err := assistant.Create_credentials_files(credentials)
-		if err != nil {
-			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
-			os.Exit(0)
 		} else {
 			fmt.Println(ui.Bold("\n:: Alright, let's go. 👍"))
 		}
-
 	}
 
+	// ---
 	if git.Exist_repository() {
 
 		//------
@@ -75,9 +59,11 @@ func main() {
 		newInstace.UnAdded = unadded
 
 		//------
+
 		if err := check_unadded_changes(newInstace.UnAdded); err != nil {
 			log.Println(ui.StyleError(fmt.Sprintf("\nERROR : %s", err.Error())))
 		}
+
 		//------
 		uncommitted, err := git.Get_uncommitted_changes()
 		if err != nil {

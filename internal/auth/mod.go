@@ -1,4 +1,4 @@
-package assistant
+package auth
 
 import (
 	"bufio"
@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"git_commit_assistant/internal/model"
+	"git_commit_assistant/internal/ui"
 )
 
 var credentials_file_name = ".git-assistant-credentials"
@@ -48,6 +49,33 @@ func Create_credentials_files(credentials model.CredentialsFile) error {
 	err = os.WriteFile(file_path, data_file, 0o644)
 	if err != nil {
 		return fmt.Errorf("Error: %s", err.Error())
+	}
+
+	return nil
+}
+
+func Set_credentials(credentials *model.CredentialsFile) error {
+	var err error
+
+	fmt.Println(ui.Bold("\n:: Is this your first time accessing the site, or did you delete your credentials file?"))
+	fmt.Println(ui.Bold("\n:: We'll create a new one for you!"))
+
+	fmt.Print("= Your api Key [Open Router] => ")
+
+	credentials.Key, err = bufio.NewReader(os.Stdout).ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	fmt.Print("= The model you will use [Open Router] => ")
+	credentials.Model, err = bufio.NewReader(os.Stdout).ReadString('\n')
+	if err != nil {
+		return err
+	}
+
+	err = Create_credentials_files(*credentials)
+	if err != nil {
+		return err
 	}
 
 	return nil
