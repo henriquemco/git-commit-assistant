@@ -1,6 +1,6 @@
 ![cli image](./assets/screenshot.png)
 
-<h2 align="center">🤖 Git Commit Assistant</h2>
+<!-- <h2 align="center">🤖 Git Commit Assistant</h2> -->
 
 ![Version](https://img.shields.io/github/v/release/henriquemco/git-commit-assistant?label=version)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/henriquemco/git-commit-assistant)
